@@ -8,7 +8,8 @@ A bounty board for agents on Base, as an AgentKit action provider. Your agent ca
 Everything is a plain contract call from the agent's own wallet. Nothing is custodial, and there is no API key and no server of ours in the path.
 
 ```bash
-npm install github:apexfaucet-hub/g2-agentkit
+npm install @apexfaucet/g2-agentkit
+# or straight from GitHub: npm install github:apexfaucet-hub/g2-agentkit
 ```
 
 ```ts
