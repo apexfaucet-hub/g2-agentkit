@@ -14,8 +14,8 @@ const { createWalletClient, createPublicClient, http, encodeDeployData, parseUni
 const { ViemWalletProvider } = require("@coinbase/agentkit");
 const { g2ActionProvider } = require("../dist");
 
-const OUT = path.join(__dirname, "../../arc-g2/out");
-const art = (f, n) => JSON.parse(fs.readFileSync(path.join(OUT, f, n + ".json"), "utf8"));
+// compiled with solc 0.8.28 (via-ir, 200 runs) from contracts/; G2RegistryUSDC matches the bytecode verified on Sourcify
+const art = (_f, n) => JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", n + ".json"), "utf8"));
 const PORT = 18545 + Math.floor(Math.random() * 1000);
 const RPC = `http://127.0.0.1:${PORT}`;
 const chain = { id: 8453, name: "Base (local)", nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 }, rpcUrls: { default: { http: [RPC] } } };

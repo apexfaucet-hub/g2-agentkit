@@ -3,7 +3,7 @@ pragma solidity 0.8.28;
 
 import {Test, Vm} from "forge-std/Test.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {G2RegistryUSDC} from "../contracts/G2RegistryUSDC.sol";
+import {G2RegistryUSDC} from "./G2RegistryUSDC.sol";
 
 contract RevMockRegistry {
     mapping(uint256 => address) public o;
