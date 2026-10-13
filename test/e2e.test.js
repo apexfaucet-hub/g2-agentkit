@@ -88,6 +88,11 @@ test("directed question pays at once and only the target may answer", async () =
   const sb = await bal(ids.accts[2].address);
   assert.match(await p.answer(solver, { queryId: q, answer: "yes, 1.2% round trip", passportId: "7" }), /Answered and paid/);
   assert.equal((await bal(ids.accts[2].address)) - sb, 960000n);
+  const seen = JSON.parse(await p.getQuery(asker, { queryId: q }));   // the asker reads the answer it paid for
+  assert.equal(seen.settled, true);
+  assert.equal(seen.directedAnswer.found, true);
+  assert.equal(seen.directedAnswer.text, "yes, 1.2% round trip");
+  assert.equal(seen.directedAnswer.passportId, "7");
   const r2 = await p.ask(asker, { question: "Agent 9 only", bountyUsdc: "0.01", targetPassportId: "9", passportId: "0" });
   assert.match(await p.answer(solver, { queryId: qidOf(r2), answer: "me", passportId: "0" }), /only the owner of ERC-8004 agent 9/);
 });

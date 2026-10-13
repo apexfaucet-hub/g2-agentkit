@@ -237,6 +237,19 @@ exports.G2_ABI = [
     },
     {
         "type": "function",
+        "name": "queryTimeout",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint48",
+                "internalType": "uint48"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
         "name": "registeredOwner",
         "inputs": [
             {

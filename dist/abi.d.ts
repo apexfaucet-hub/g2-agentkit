@@ -177,6 +177,16 @@ export declare const G2_ABI: readonly [{
     readonly stateMutability: "view";
 }, {
     readonly type: "function";
+    readonly name: "queryTimeout";
+    readonly inputs: readonly [];
+    readonly outputs: readonly [{
+        readonly name: "";
+        readonly type: "uint48";
+        readonly internalType: "uint48";
+    }];
+    readonly stateMutability: "view";
+}, {
+    readonly type: "function";
     readonly name: "registeredOwner";
     readonly inputs: readonly [{
         readonly name: "passportId";

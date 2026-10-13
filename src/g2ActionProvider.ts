@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { ActionProvider, CreateAction, EvmWalletProvider, Network } from "@coinbase/agentkit";
-import { decodeEventLog, encodeFunctionData, formatUnits, hexToString, parseUnits, toHex, Hex } from "viem";
+import { decodeEventLog, encodeFunctionData, formatUnits, hexToString, parseAbiItem, parseUnits, toHex, Hex } from "viem";
+
+const G2_SIGNAL = parseAbiItem(
+  "event G2Signal(address indexed sender, uint8 indexed sigType, uint256 indexed passportId, bytes32 queryId, uint96 bounty, bool verified, bytes payload)",
+);
 import { G2_ABI } from "./abi";
 import { ERC20_ABI, G2_DEPLOYMENTS, G2Deployment, MAX_TEXT_BYTES } from "./constants";
 import {
@@ -170,8 +174,10 @@ Use g2_get_query for the answers so far, and g2_answer to answer. Free: a read, 
    */
   @CreateAction({
     name: "g2_get_query",
-    description: `Read one G2 question by queryId, with every answer recorded so far (address, text).
-The poster uses this to choose a winner for g2_award. Free: a read, no gas.`,
+    description: `Read one G2 question by queryId with its answers.
+- Open question: every answer recorded so far (address, text). The poster uses this to choose a winner for g2_award.
+- Directed question that was answered: the answer is in the transaction that paid it, and this action finds it in the chain's logs.
+Free: reads only, no gas.`,
     schema: GetQuerySchema,
   })
   async getQuery(walletProvider: EvmWalletProvider, args: z.infer<typeof GetQuerySchema>): Promise<string> {
@@ -201,10 +207,49 @@ The poster uses this to choose a winner for g2_award. Free: a read, no gas.`,
         }
         answers.push({ solver, text: text.slice(0, 500) });
       }
-      return JSON.stringify({ ...r, answerList: answers, note: UNTRUSTED });
+      let directedAnswer: unknown = undefined;
+      if (r.kind === "directed" && r.settled) directedAnswer = await this.findDirectedAnswer(walletProvider, d, args.queryId as Hex);
+      return JSON.stringify({ ...r, answerList: answers, directedAnswer, note: UNTRUSTED });
     } catch (e) {
       return `Error reading the G2 query: ${e}`;
     }
+  }
+
+  /**
+   * A directed answer lives only in the G2Signal event of the respond() that paid it. The search starts at the block where the
+   * question was posted (its expiry minus the registry's timeout, about 2 s per Base block) and walks forward in small chunks,
+   * which most RPCs accept.
+   */
+  private async findDirectedAnswer(walletProvider: EvmWalletProvider, d: G2Deployment, queryId: Hex) {
+    const client = walletProvider.getPublicClient();
+    const q = (await walletProvider.readContract({ address: d.registry, abi: G2_ABI, functionName: "getQuery", args: [queryId] })) as { expiry: number | bigint };
+    const timeout = Number(await walletProvider.readContract({ address: d.registry, abi: G2_ABI, functionName: "queryTimeout" }));
+    const tip = await client.getBlock();
+    const postedAt = Number(q.expiry) - timeout;
+    let from = tip.number - BigInt(Math.max(0, Math.ceil((Number(tip.timestamp) - postedAt) / 2) + 60));
+    if (from < 0n) from = 0n;
+    const STEP = 1500n;
+    for (let i = 0; i < 40 && from <= tip.number; i++) {
+      const to = from + STEP - 1n < tip.number ? from + STEP - 1n : tip.number;
+      let logs;
+      try {
+        logs = await client.getLogs({ address: d.registry, event: G2_SIGNAL, args: { sigType: 4 }, fromBlock: from, toBlock: to });
+      } catch (e) {
+        return { found: false, why: `this RPC refused a log search (${String(e).slice(0, 80)}). The answer is in the transaction that settled the question: ${d.explorerTx.replace("/tx/", "/address/")}${d.registry}` };
+      }
+      const hit = logs.find((l) => (l.args.queryId ?? "").toLowerCase() === queryId.toLowerCase());
+      if (hit) {
+        let text = "";
+        try {
+          text = hexToString(hit.args.payload ?? "0x");
+        } catch {
+          text = "(not valid UTF-8)";
+        }
+        return { found: true, solver: hit.args.sender, passportId: String(hit.args.passportId ?? ""), text: text.slice(0, 1000), tx: d.explorerTx + hit.transactionHash };
+      }
+      from = to + 1n;
+    }
+    return { found: false, why: "no answer found in the blocks searched; it may be further back than the search window" };
   }
 
   /**
@@ -262,7 +307,8 @@ This action approves exactly the bounty for the registry first if needed. Minimu
           /* not ours */
         }
       }
-      return `Posted G2 question with a ${args.bountyUsdc} USDC bounty. queryId: ${queryId ?? "(read it from the transaction)"}. Transaction: ${d.explorerTx}${hash}`;
+      const next = args.targetPassportId === "0" ? "Read answers with g2_get_query, then pay one with g2_award." : "When the agent answers, g2_get_query shows its answer (directedAnswer).";
+      return `Posted G2 question with a ${args.bountyUsdc} USDC bounty. queryId: ${queryId ?? "(read it from the transaction)"}. ${next} Transaction: ${d.explorerTx}${hash}`;
     } catch (e) {
       return `Error posting the G2 question: ${e}`;
     }

@@ -45,6 +45,12 @@ export declare class G2ActionProvider extends ActionProvider<EvmWalletProvider> 
      */
     getQuery(walletProvider: EvmWalletProvider, args: z.infer<typeof GetQuerySchema>): Promise<string>;
     /**
+     * A directed answer lives only in the G2Signal event of the respond() that paid it. The search starts at the block where the
+     * question was posted (its expiry minus the registry's timeout, about 2 s per Base block) and walks forward in small chunks,
+     * which most RPCs accept.
+     */
+    private findDirectedAnswer;
+    /**
      * Posts a question with a USDC bounty.
      *
      * @param walletProvider - The wallet provider.

@@ -52,7 +52,7 @@ The minimum bounty is 0.02 USDC. It is a directed question, so the bounty moves 
 
 > Ask agent 88292 on G2: "Exit test for 0x4F9Fd6Be4a90f2620860d680c0d4d5Fb53d1A825", bounty 0.02 USDC.
 
-The agent calls `g2_ask` with `targetPassportId: "88292"`. Then `g2_get_query` shows the answer, or read it in the transaction that settled the question.
+The agent calls `g2_ask` with `targetPassportId: "88292"`. Then `g2_get_query` returns the answer as `directedAnswer`, read from the log of the transaction that paid it (version 0.1.1 or later).
 
 ## Contract
 
