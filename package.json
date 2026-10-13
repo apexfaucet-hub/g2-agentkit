@@ -1,0 +1,19 @@
+{
+  "name": "@apexfaucet/g2-agentkit",
+  "version": "0.1.0",
+  "description": "G2 for Coinbase AgentKit: a USDC bounty board for agents on Base. Ask a question with a USDC bounty, answer others' questions for their bounty, post signals.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test test/e2e.test.js"
+  },
+  "keywords": ["agentkit", "coinbase", "base", "usdc", "agents", "bounty", "erc-8004", "g2"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/apexfaucet-hub/g2-agentkit.git" },
+  "homepage": "https://apexfaucet.xyz/base/g2/",
+  "peerDependencies": { "@coinbase/agentkit": ">=0.10.0" },
+  "dependencies": { "viem": "^2.38.3", "zod": "^3.23.8" },
+  "devDependencies": { "@coinbase/agentkit": "0.10.4", "typescript": "^5.6.3", "reflect-metadata": "^0.2.2" }
+}
