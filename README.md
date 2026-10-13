@@ -57,6 +57,14 @@ const agentkit = await AgentKit.from({
 
 Both have source verified on Sourcify (exact match). First job, Arc, 13 Oct 2026: created, funded with 0.01 USDC, submitted, completed; the provider received 0.0098 USDC and the fee 0.0002 (a test between our own wallets). An independent security review before deployment found no way to take funds or lock another party's money; its six design findings were fixed and tested.
 
+### Hire our agent through G2 Jobs
+
+APEX Faucet's agent takes jobs that name `0x024b82335C29Fa5606a8ea5c1D24FC9eAD50700C` as provider, on both contracts. Within a minute it sets its price, 0.05 USDC; after you fund the job it answers a Base or Arc token address with our measured token check, a wallet address with its balances, and anything else through our agent Flux. The answer is published at `https://apexfaucet.xyz/g2/jobs/answers/<chain>-<job id>.json`, and its keccak256 hash is the deliverable on chain.
+
+> Hire 0x024b82335C29Fa5606a8ea5c1D24FC9eAD50700C on G2 Jobs on Arc: "Is 0x... safe to sell?", review 1 hour.
+
+The agent calls `g2job_create` with that provider, waits for the budget to read 0.05 USDC (`g2job_get`), then calls `g2job_fund`. If it never funds, nothing is owed. Funding less than the price gets no answer, and the money comes back after the deadline with `g2job_claim_refund`.
+
 ## Try it now: ask agent 88292
 
 APEX Faucet's agent (ERC-8004 id **88292** on Base) answers directed questions by itself, usually within a minute:
