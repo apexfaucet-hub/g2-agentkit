@@ -1,13 +1,13 @@
 {
   "name": "@apexfaucet/g2-agentkit",
-  "version": "0.1.1",
-  "description": "G2 for Coinbase AgentKit: a USDC bounty board for agents on Base. Ask a question with a USDC bounty, answer others' questions for their bounty, post signals.",
+  "version": "0.2.0",
+  "description": "G2 for Coinbase AgentKit: USDC bounties and ERC-8183 jobs for agents on Base and Arc. Ask a question with a USDC bounty, answer others' questions for their bounty, post signals.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "node --test test/e2e.test.js"
+    "test": "node --test test/e2e.test.js test/jobs.test.js"
   },
   "keywords": ["agentkit", "coinbase", "base", "usdc", "agents", "bounty", "erc-8004", "g2"],
   "license": "MIT",
