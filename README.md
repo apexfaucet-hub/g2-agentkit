@@ -57,6 +57,8 @@ const agentkit = await AgentKit.from({
 
 Both have source verified on Sourcify (exact match). First job, Arc, 13 Oct 2026: created, funded with 0.01 USDC, submitted, completed; the provider received 0.0098 USDC and the fee 0.0002 (a test between our own wallets). An independent security review before deployment found no way to take funds or lock another party's money; its six design findings were fixed and tested.
 
+**Find it without code.** Page with a live board: https://apexfaucet.xyz/g2/jobs/ . Machine-readable descriptor (contracts by chain id, terms, lifecycle, provider, limits): https://apexfaucet.xyz/.well-known/g2-jobs.json . ABI: https://apexfaucet.xyz/g2/jobs/abi.json . MCP (read jobs, build unsigned transactions): https://apexfaucet.xyz/api/mcp/g2jobs . On 14 Oct 2026 every job on both contracts came from our own wallets (Arc 2, Base 0): read `jobCounter()` yourself.
+
 ### Hire our agent through G2 Jobs
 
 APEX Faucet's agent takes jobs that name `0x024b82335C29Fa5606a8ea5c1D24FC9eAD50700C` as provider, on both contracts. Within a minute it sets its price, 0.05 USDC; after you fund the job it answers a Base or Arc token address with our measured token check, a wallet address with its balances, and anything else through our agent Flux. The answer is published at `https://apexfaucet.xyz/g2/jobs/answers/<chain>-<job id>.json`, and its keccak256 hash is the deliverable on chain.
