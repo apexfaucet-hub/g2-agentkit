@@ -120,7 +120,17 @@ Rules that protect the provider: if the evaluator stays silent after submission,
       const bal = (await w.readContract({ address: t.address, abi: ERC20_ABI, functionName: "balanceOf", args: [me] })) as bigint;
       if (bal < j.budget) return `Error: you hold ${formatUnits(bal, 6)} USDC, the budget is ${formatUnits(j.budget, 6)}`;
       const allowance = (await w.readContract({ address: t.address, abi: ERC20_ABI, functionName: "allowance", args: [me, d.contract] })) as bigint;
-      if (allowance < j.budget) await this.send(w, t.address, encodeFunctionData({ abi: ERC20_ABI, functionName: "approve", args: [d.contract, j.budget] }));
+      if (allowance < j.budget) {
+        await this.send(w, t.address, encodeFunctionData({ abi: ERC20_ABI, functionName: "approve", args: [d.contract, j.budget] }));
+        // 14 Oct 2026 (found on Base mainnet): the receipt came from one RPC node and the next gas estimate from another that had not seen
+        // the approval yet ("ERC20: transfer amount exceeds allowance"). Wait until the allowance is readable before escrowing.
+        let seen = false;
+        for (let i = 0; i < 20 && !seen; i++) {
+          const al = (await w.readContract({ address: t.address, abi: ERC20_ABI, functionName: "allowance", args: [me, d.contract] })) as bigint;
+          if (al >= j.budget) seen = true; else await new Promise((r) => setTimeout(r, 1500));
+        }
+        if (!seen) return "Error: the approval was mined but is not visible on this RPC yet; call g2job_fund again in a moment (nothing was escrowed)";
+      }
       const { hash } = await this.send(w, d.contract, encodeFunctionData({ abi: G2_JOBS_ABI, functionName: "fund", args: [BigInt(a.jobId), j.budget, "0x"] }));
       return `Funded job ${a.jobId}: ${formatUnits(j.budget, 6)} USDC in escrow. Transaction: ${d.explorerTx}${hash}`;
     } catch (e) { return `Error funding: ${e}`; }

@@ -140,8 +140,21 @@ class G2JobsActionProvider extends agentkit_1.ActionProvider {
             if (bal < j.budget)
                 return `Error: you hold ${(0, viem_1.formatUnits)(bal, 6)} USDC, the budget is ${(0, viem_1.formatUnits)(j.budget, 6)}`;
             const allowance = (await w.readContract({ address: t.address, abi: constants_1.ERC20_ABI, functionName: "allowance", args: [me, d.contract] }));
-            if (allowance < j.budget)
+            if (allowance < j.budget) {
                 await this.send(w, t.address, (0, viem_1.encodeFunctionData)({ abi: constants_1.ERC20_ABI, functionName: "approve", args: [d.contract, j.budget] }));
+                // 14 Oct 2026 (found on Base mainnet): the receipt came from one RPC node and the next gas estimate from another that had not seen
+                // the approval yet ("ERC20: transfer amount exceeds allowance"). Wait until the allowance is readable before escrowing.
+                let seen = false;
+                for (let i = 0; i < 20 && !seen; i++) {
+                    const al = (await w.readContract({ address: t.address, abi: constants_1.ERC20_ABI, functionName: "allowance", args: [me, d.contract] }));
+                    if (al >= j.budget)
+                        seen = true;
+                    else
+                        await new Promise((r) => setTimeout(r, 1500));
+                }
+                if (!seen)
+                    return "Error: the approval was mined but is not visible on this RPC yet; call g2job_fund again in a moment (nothing was escrowed)";
+            }
             const { hash } = await this.send(w, d.contract, (0, viem_1.encodeFunctionData)({ abi: g2JobsAbi_1.G2_JOBS_ABI, functionName: "fund", args: [BigInt(a.jobId), j.budget, "0x"] }));
             return `Funded job ${a.jobId}: ${(0, viem_1.formatUnits)(j.budget, 6)} USDC in escrow. Transaction: ${d.explorerTx}${hash}`;
         }
