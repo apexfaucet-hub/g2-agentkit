@@ -290,6 +290,14 @@ This action approves exactly the bounty for the registry first if needed. Minimu
       })) as bigint;
       if (allowance < amount) {
         await this.send(walletProvider, d.token, encodeFunctionData({ abi: ERC20_ABI, functionName: "approve", args: [d.registry, amount] }));
+        // 14 Oct 2026 (found on Base mainnet with g2job_fund): the receipt can come from one RPC node and the next gas estimate from
+        // another that has not seen the approval yet. Wait until the allowance is readable before sending the bounty.
+        let seen = false;
+        for (let i = 0; i < 20 && !seen; i++) {
+          const al = (await walletProvider.readContract({ address: d.token, abi: ERC20_ABI, functionName: "allowance", args: [me, d.registry] })) as bigint;
+          if (al >= amount) seen = true; else await new Promise((r) => setTimeout(r, 1500));
+        }
+        if (!seen) return "Error: the approval was mined but is not visible on this RPC yet; call g2_ask again in a moment (nothing was escrowed)";
       }
       const packet = toHex(`G2|Q|${args.passportId}|${args.targetPassportId}|${args.question}`);
       const { hash, receipt } = await this.send(

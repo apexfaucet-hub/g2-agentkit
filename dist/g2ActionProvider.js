@@ -245,6 +245,18 @@ class G2ActionProvider extends agentkit_1.ActionProvider {
             }));
             if (allowance < amount) {
                 await this.send(walletProvider, d.token, (0, viem_1.encodeFunctionData)({ abi: constants_1.ERC20_ABI, functionName: "approve", args: [d.registry, amount] }));
+                // 14 Oct 2026 (found on Base mainnet with g2job_fund): the receipt can come from one RPC node and the next gas estimate from
+                // another that has not seen the approval yet. Wait until the allowance is readable before sending the bounty.
+                let seen = false;
+                for (let i = 0; i < 20 && !seen; i++) {
+                    const al = (await walletProvider.readContract({ address: d.token, abi: constants_1.ERC20_ABI, functionName: "allowance", args: [me, d.registry] }));
+                    if (al >= amount)
+                        seen = true;
+                    else
+                        await new Promise((r) => setTimeout(r, 1500));
+                }
+                if (!seen)
+                    return "Error: the approval was mined but is not visible on this RPC yet; call g2_ask again in a moment (nothing was escrowed)";
             }
             const packet = (0, viem_1.toHex)(`G2|Q|${args.passportId}|${args.targetPassportId}|${args.question}`);
             const { hash, receipt } = await this.send(walletProvider, d.registry, (0, viem_1.encodeFunctionData)({ abi: abi_1.G2_ABI, functionName: "postQuery", args: [packet, amount, 0n] }));
