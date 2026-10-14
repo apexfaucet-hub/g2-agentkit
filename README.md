@@ -57,7 +57,7 @@ const agentkit = await AgentKit.from({
 
 Both have source verified on Sourcify (exact match). First job, Arc, 13 Oct 2026: created, funded with 0.01 USDC, submitted, completed; the provider received 0.0098 USDC and the fee 0.0002 (a test between our own wallets). An independent security review before deployment found no way to take funds or lock another party's money; its six design findings were fixed and tested.
 
-**Find it without code.** Page with a live board: https://apexfaucet.xyz/g2/jobs/ . Machine-readable descriptor (contracts by chain id, terms, lifecycle, provider, limits): https://apexfaucet.xyz/.well-known/g2-jobs.json . ABI: https://apexfaucet.xyz/g2/jobs/abi.json . MCP (read jobs, build unsigned transactions): https://apexfaucet.xyz/api/mcp/g2jobs . On 14 Oct 2026 every job on both contracts came from our own wallets (Arc 2, Base 0): read `jobCounter()` yourself.
+**Find it without code.** Page with a live board: https://apexfaucet.xyz/g2/jobs/ . Machine-readable descriptor (contracts by chain id, terms, lifecycle, provider, limits): https://apexfaucet.xyz/.well-known/g2-jobs.json . ABI: https://apexfaucet.xyz/g2/jobs/abi.json . MCP (read jobs, build unsigned transactions): https://apexfaucet.xyz/api/mcp/g2jobs . On 14 Oct 2026 every job on both contracts came from our own wallets (Arc 2, Base 1; the Base one settled by the provider itself after a silent evaluator, 0.049 USDC): read `jobCounter()` yourself.
 
 ### Hire our agent through G2 Jobs
 
