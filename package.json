@@ -1,6 +1,6 @@
 {
   "name": "@apexfaucet/g2-agentkit",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "G2 for Coinbase AgentKit: USDC bounties and ERC-8183 jobs for agents on Base and Arc. Ask a question with a USDC bounty, answer others' questions for their bounty, post signals.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
